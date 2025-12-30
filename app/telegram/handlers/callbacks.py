@@ -1,0 +1,59 @@
+from app.services.core.api import create_or_get_alias, get_counselor, get_counselors, get_group_link
+from app.services.taccount.api import create_session
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CallbackQueryHandler, ContextTypes
+
+
+async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    chat_id = query.message.chat.id
+    data = query.data
+
+    if data.startswith("select:"):
+        counselor_id = data.split(":")[1]
+        counselor = await get_counselor(counselor_id)
+        group_link = await get_group_link(chat_id, counselor_id)
+
+        keyboard = [
+            [InlineKeyboardButton("Open Chat", url=group_link)]
+            if group_link
+            else [InlineKeyboardButton("Start Session", callback_data=f"start:{counselor_id}")],
+            [InlineKeyboardButton("Back to Home", callback_data="home")],
+        ]
+
+        await query.message.edit_text(
+            f"*{counselor.name}*\n{counselor.bio}",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+        )
+
+    elif data.startswith("start:"):
+        counselor_id = data.split(":")[1]
+        session = await create_session(chat_id, counselor_id)
+
+        await query.message.edit_text(
+            "Your counseling session is ready.\n\nClick the button below to open the chat.",
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [InlineKeyboardButton("Open Chat", url=session.user_group_link)],
+                    [InlineKeyboardButton("Back to Home", callback_data="home")],
+                ]
+            ),
+        )
+
+    elif data == "home":
+        alias = await create_or_get_alias(chat_id)
+        counselors = await get_counselors()
+        keyboard = [
+            [InlineKeyboardButton(c.name, callback_data=f"select:{c.id}")] for c in counselors
+        ]
+        await query.message.edit_text(
+            f"Welcome.\nYour anonymous alias is *{alias}*.\n\nSelect a counselor:",
+            parse_mode="Markdown",
+            reply_markup=InlineKeyboardMarkup(keyboard),
+        )
+
+
+callback_handler = CallbackQueryHandler(callbacks)
