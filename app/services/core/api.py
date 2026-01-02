@@ -13,10 +13,7 @@ from app.services.core.model import (
 
 async def create_or_get_alias(telegram_user_id: int) -> str:
     async with httpx.AsyncClient() as client:
-        r = await client.post(
-            f"{settings.core_api_base}/aliases/start",
-            json={"telegram_user_id": telegram_user_id},
-        )
+        r = await client.post(f"{settings.core_api_base}/aliases", json={"telegram_user_id": telegram_user_id})
         r.raise_for_status()
         response = AliasResponse(**r.json())
         return response.alias
@@ -39,9 +36,9 @@ async def get_counselor(counselor_id: str) -> CounselorResponse:
 
 async def get_group_link(telegram_user_id: int, counselor_id: str) -> str | None:
     async with httpx.AsyncClient() as client:
-        r = await client.get(
-            f"{settings.core_api_base}/sessions/group-link",
-            params={
+        r = await client.post(
+            f"{settings.core_api_base}/groups",
+            json={
                 "telegram_user_id": telegram_user_id,
                 "counselor_id": counselor_id,
             },

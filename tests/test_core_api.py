@@ -123,7 +123,7 @@ async def test_get_group_link_with_link(mock_env_vars):
         mock_response.raise_for_status = MagicMock()
 
         mock_client_instance = AsyncMock()
-        mock_client_instance.__aenter__.return_value.get = AsyncMock(return_value=mock_response)
+        mock_client_instance.__aenter__.return_value.post = AsyncMock(return_value=mock_response)
         mock_client_instance.__aexit__ = AsyncMock(return_value=None)
         mock_client.return_value = mock_client_instance
 
@@ -143,7 +143,7 @@ async def test_get_group_link_without_link(mock_env_vars):
         mock_response.raise_for_status = MagicMock()
 
         mock_client_instance = AsyncMock()
-        mock_client_instance.__aenter__.return_value.get = AsyncMock(return_value=mock_response)
+        mock_client_instance.__aenter__.return_value.post = AsyncMock(return_value=mock_response)
         mock_client_instance.__aexit__ = AsyncMock(return_value=None)
         mock_client.return_value = mock_client_instance
 

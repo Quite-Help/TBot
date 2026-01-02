@@ -1,5 +1,6 @@
 from app.services.core.api import create_or_get_alias, get_counselor, get_counselors, get_group_link
 from app.services.taccount.api import create_session
+from app.telegram.handlers.start import welcome_message
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackQueryHandler, ContextTypes
 
@@ -24,7 +25,7 @@ async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
         ]
 
         await query.message.edit_text(
-            f"*{counselor.name}*\n{counselor.bio}",
+            f"*{counselor.name}*\n\n{counselor.bio}",
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
@@ -50,7 +51,7 @@ async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton(c.name, callback_data=f"select:{c.id}")] for c in counselors
         ]
         await query.message.edit_text(
-            f"Welcome.\nYour anonymous alias is *{alias}*.\n\nSelect a counselor:",
+            welcome_message.format(alias=alias),
             parse_mode="Markdown",
             reply_markup=InlineKeyboardMarkup(keyboard),
         )
