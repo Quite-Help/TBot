@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 import httpx
 from fastapi import FastAPI
 
+from app.healthcheck import router as healthcheck_router
 from app.telegram.app import set_webhook, telegram_app
 from app.telegram.webhook import router as telegram_router
 
@@ -21,3 +22,4 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="TBot Service", lifespan=lifespan)
 
 app.include_router(telegram_router)
+app.include_router(healthcheck_router)
