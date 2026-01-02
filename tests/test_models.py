@@ -1,4 +1,6 @@
 """Tests for model classes."""
+
+import pydantic
 import pytest
 
 from app.services.core.model import (
@@ -23,7 +25,7 @@ class TestCounselorInfo:
 
     def test_counselor_info_validation(self):
         """Test CounselorInfo validation."""
-        with pytest.raises(Exception):  # Pydantic validation error
+        with pytest.raises(pydantic.ValidationError):  # Pydantic validation error
             CounselorInfo(id="1")  # Missing name
 
 
@@ -52,7 +54,7 @@ class TestCounselorsResponse:
             CounselorInfo(id="2", name="Jane"),
         ]
         response = CounselorsResponse(counselors=counselors)
-        assert len(response.counselors) == 2
+        assert len(response.counselors) == 2  # noqa: PLR2004
         assert response.counselors[0].name == "John"
         assert response.counselors[1].name == "Jane"
 
@@ -74,7 +76,7 @@ class TestResolveGroupResponse:
     def test_resolve_group_response_creation(self):
         """Test creating a ResolveGroupResponse instance."""
         response = ResolveGroupResponse(target_group_id=12345, display_name="Test User")
-        assert response.target_group_id == 12345
+        assert response.target_group_id == 12345  # noqa: PLR2004
         assert response.display_name == "Test User"
 
 
@@ -99,4 +101,3 @@ class TestCreateSessionResponse:
         """Test creating a CreateSessionResponse instance."""
         response = CreateSessionResponse(user_group_link="https://t.me/session123")
         assert response.user_group_link == "https://t.me/session123"
-

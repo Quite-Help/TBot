@@ -1,4 +1,5 @@
 """Tests for app.services.core.api module."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -12,16 +13,14 @@ from app.services.core.api import (
     resolve_group,
 )
 from app.services.core.model import (
-    AliasResponse,
     CounselorInfo,
     CounselorResponse,
-    GroupLinkResponse,
     ResolveGroupResponse,
 )
 
 
 @pytest.mark.asyncio
-async def test_create_or_get_alias_success(mock_env_vars):
+async def test_create_or_get_alias_success():
     """Test successful alias creation/retrieval."""
     mock_response_data = {"alias": "test_alias_123"}
 
@@ -42,7 +41,7 @@ async def test_create_or_get_alias_success(mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_create_or_get_alias_http_error(mock_env_vars):
+async def test_create_or_get_alias_http_error():
     """Test alias creation with HTTP error."""
     with patch("httpx.AsyncClient") as mock_client:
         mock_response = MagicMock()
@@ -60,7 +59,7 @@ async def test_create_or_get_alias_http_error(mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_get_counselors_success(mock_env_vars):
+async def test_get_counselors_success():
     """Test successful counselors retrieval."""
     mock_response_data = {
         "counselors": [
@@ -81,7 +80,7 @@ async def test_get_counselors_success(mock_env_vars):
 
         result = await get_counselors()
 
-        assert len(result) == 2
+        assert len(result) == 2  # noqa: PLR2004
         assert isinstance(result[0], CounselorInfo)
         assert result[0].id == "1"
         assert result[0].name == "John Doe"
@@ -90,7 +89,7 @@ async def test_get_counselors_success(mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_get_counselor_success(mock_env_vars):
+async def test_get_counselor_success():
     """Test successful counselor retrieval."""
     mock_response_data = {"id": "1", "name": "John Doe", "bio": "Test bio"}
 
@@ -113,7 +112,7 @@ async def test_get_counselor_success(mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_get_group_link_with_link(mock_env_vars):
+async def test_get_group_link_with_link():
     """Test group link retrieval when link exists."""
     mock_response_data = {"group_link": "https://t.me/test_group"}
 
@@ -133,7 +132,7 @@ async def test_get_group_link_with_link(mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_get_group_link_without_link(mock_env_vars):
+async def test_get_group_link_without_link():
     """Test group link retrieval when no link exists."""
     mock_response_data = {"group_link": None}
 
@@ -153,7 +152,7 @@ async def test_get_group_link_without_link(mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_resolve_group_success(mock_env_vars):
+async def test_resolve_group_success():
     """Test successful group resolution."""
     mock_response_data = {"target_group_id": 67890, "display_name": "Test User"}
 
@@ -170,6 +169,5 @@ async def test_resolve_group_success(mock_env_vars):
         result = await resolve_group(12345)
 
         assert isinstance(result, ResolveGroupResponse)
-        assert result.target_group_id == 67890
-        assert result.display_name == "Test User"
-
+        assert result.target_group_id == mock_response_data["target_group_id"]
+        assert result.display_name == mock_response_data["display_name"]

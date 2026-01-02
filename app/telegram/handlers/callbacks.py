@@ -1,8 +1,9 @@
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CallbackQueryHandler, ContextTypes
+
 from app.services.core.api import create_or_get_alias, get_counselor, get_counselors, get_group_link
 from app.services.taccount.api import create_session
 from app.telegram.handlers.start import welcome_message
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CallbackQueryHandler, ContextTypes
 
 
 async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):

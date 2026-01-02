@@ -1,6 +1,7 @@
-from app.services.core.api import resolve_group
-from telegram import Update  # noqa: TC001
+from telegram import Update  # noqa: TC002
 from telegram.ext import ContextTypes, MessageHandler, filters
+
+from app.services.core.api import resolve_group
 
 
 async def relay(update: Update, context: ContextTypes.DEFAULT_TYPE):

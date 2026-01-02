@@ -1,5 +1,7 @@
 """Tests for app.config module."""
+
 import os
+
 import pytest
 
 from app.config import Settings, settings
@@ -45,4 +47,3 @@ def test_settings_missing_env_var(monkeypatch):
             core_api_base="https://core.test.com",
             taccount_api_base="https://taccount.test.com",
         )
-

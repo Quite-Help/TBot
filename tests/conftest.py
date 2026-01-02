@@ -1,4 +1,5 @@
 """Pytest configuration and shared fixtures."""
+
 import os
 from unittest.mock import AsyncMock, MagicMock
 
@@ -18,7 +19,7 @@ for key, value in _env_vars.items():
     os.environ.setdefault(key, value)
 
 
-def pytest_configure(config):
+def pytest_configure():
     """Configure pytest - set environment variables before test collection."""
     # Ensure all required environment variables are set
     for key, value in _env_vars.items():
@@ -80,4 +81,3 @@ def mock_context():
     context.bot = MagicMock()
     context.bot.send_message = AsyncMock()
     return context
-

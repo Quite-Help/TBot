@@ -1,14 +1,14 @@
 """Tests for app.telegram.handlers.relay module."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from telegram import Update
 
 from app.telegram.handlers.relay import relay
 
 
 @pytest.mark.asyncio
-async def test_relay_with_text_message(mock_update, mock_context, mock_env_vars):
+async def test_relay_with_text_message(mock_update, mock_context):
     """Test relay handler with text message."""
     mock_update.message.text = "Test message"
     mock_update.message.chat.id = 12345
@@ -34,7 +34,7 @@ async def test_relay_with_text_message(mock_update, mock_context, mock_env_vars)
 
 
 @pytest.mark.asyncio
-async def test_relay_without_message(mock_update, mock_context, mock_env_vars):
+async def test_relay_without_message(mock_update, mock_context):
     """Test relay handler when message is None."""
     mock_update.message = None
 
@@ -47,7 +47,7 @@ async def test_relay_without_message(mock_update, mock_context, mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_relay_without_text(mock_update, mock_context, mock_env_vars):
+async def test_relay_without_text(mock_update, mock_context):
     """Test relay handler when message has no text."""
     mock_update.message.text = None
 
@@ -60,7 +60,7 @@ async def test_relay_without_text(mock_update, mock_context, mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_relay_empty_text(mock_update, mock_context, mock_env_vars):
+async def test_relay_empty_text(mock_update, mock_context):
     """Test relay handler with empty text."""
     mock_update.message.text = ""
 
@@ -70,4 +70,3 @@ async def test_relay_empty_text(mock_update, mock_context, mock_env_vars):
         # Should return early (empty string is falsy)
         mock_resolve.assert_not_called()
         mock_context.bot.send_message.assert_not_called()
-

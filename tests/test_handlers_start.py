@@ -1,16 +1,17 @@
 """Tests for app.telegram.handlers.start module."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardMarkup
 
+from app.services.core.model import CounselorInfo
 from app.telegram.handlers.start import start
 
 
 @pytest.mark.asyncio
-async def test_start_handler_success(mock_update, mock_env_vars):
+async def test_start_handler_success(mock_update):
     """Test start handler with successful API calls."""
-    from app.services.core.model import CounselorInfo
 
     mock_alias = "test_alias_123"
     mock_counselors = [
@@ -18,9 +19,14 @@ async def test_start_handler_success(mock_update, mock_env_vars):
         CounselorInfo(id="2", name="Jane Smith"),
     ]
 
-    with patch("app.telegram.handlers.start.create_or_get_alias", new_callable=AsyncMock) as mock_alias_func, patch(
-        "app.telegram.handlers.start.get_counselors", new_callable=AsyncMock
-    ) as mock_counselors_func:
+    with (
+        patch(
+            "app.telegram.handlers.start.create_or_get_alias", new_callable=AsyncMock
+        ) as mock_alias_func,
+        patch(
+            "app.telegram.handlers.start.get_counselors", new_callable=AsyncMock
+        ) as mock_counselors_func,
+    ):
         mock_alias_func.return_value = mock_alias
         mock_counselors_func.return_value = mock_counselors
 
@@ -41,7 +47,7 @@ async def test_start_handler_success(mock_update, mock_env_vars):
         # Check keyboard
         assert isinstance(call_args[1]["reply_markup"], InlineKeyboardMarkup)
         keyboard = call_args[1]["reply_markup"].inline_keyboard
-        assert len(keyboard) == 2
+        assert len(keyboard) == 2  # noqa: PLR2004
         assert keyboard[0][0].text == "John Doe"
         assert keyboard[0][0].callback_data == "select:1"
         assert keyboard[1][0].text == "Jane Smith"
@@ -49,13 +55,18 @@ async def test_start_handler_success(mock_update, mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_start_handler_empty_counselors(mock_update, mock_env_vars):
+async def test_start_handler_empty_counselors(mock_update):
     """Test start handler with no counselors."""
     mock_alias = "test_alias_123"
 
-    with patch("app.telegram.handlers.start.create_or_get_alias", new_callable=AsyncMock) as mock_alias_func, patch(
-        "app.telegram.handlers.start.get_counselors", new_callable=AsyncMock
-    ) as mock_counselors_func:
+    with (
+        patch(
+            "app.telegram.handlers.start.create_or_get_alias", new_callable=AsyncMock
+        ) as mock_alias_func,
+        patch(
+            "app.telegram.handlers.start.get_counselors", new_callable=AsyncMock
+        ) as mock_counselors_func,
+    ):
         mock_alias_func.return_value = mock_alias
         mock_counselors_func.return_value = []
 
@@ -66,4 +77,3 @@ async def test_start_handler_empty_counselors(mock_update, mock_env_vars):
         call_args = mock_update.message.reply_text.call_args
         keyboard = call_args[1]["reply_markup"].inline_keyboard
         assert len(keyboard) == 0
-

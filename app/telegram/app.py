@@ -1,8 +1,9 @@
+from telegram.ext import Application
+
 from app.config import settings
 from app.telegram.handlers.callbacks import callback_handler
 from app.telegram.handlers.relay import relay_handler
 from app.telegram.handlers.start import start_handler
-from telegram.ext import Application
 
 telegram_app = Application.builder().token(settings.bot_token).build()
 

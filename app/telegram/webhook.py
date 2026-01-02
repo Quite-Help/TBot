@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Request
+from telegram import Update
 
 from app.config import settings
 from app.telegram.app import telegram_app
-from telegram import Update
 
 router = APIRouter()
 

@@ -1,4 +1,5 @@
 """Tests for app.main module."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -9,11 +10,13 @@ from app.main import app, lifespan
 
 
 @pytest.mark.asyncio
-async def test_lifespan_startup_shutdown(mock_env_vars):
+async def test_lifespan_startup_shutdown():
     """Test lifespan context manager startup and shutdown."""
-    with patch("app.main.telegram_app") as mock_telegram_app, patch(
-        "app.main.set_webhook", new_callable=AsyncMock
-    ) as mock_set_webhook, patch("httpx.AsyncClient") as mock_httpx:
+    with (
+        patch("app.main.telegram_app") as mock_telegram_app,
+        patch("app.main.set_webhook", new_callable=AsyncMock) as mock_set_webhook,
+        patch("httpx.AsyncClient") as mock_httpx,
+    ):
         mock_telegram_app.initialize = AsyncMock()
         mock_telegram_app.shutdown = AsyncMock()
 
@@ -31,20 +34,20 @@ async def test_lifespan_startup_shutdown(mock_env_vars):
         mock_client_instance.aclose.assert_called_once()
 
 
-def test_app_creation(mock_env_vars):
+def test_app_creation():
     """Test FastAPI app creation."""
     assert isinstance(app, FastAPI)
     assert app.title == "TBot Service"
 
 
-def test_app_has_router(mock_env_vars):
+def test_app_has_router():
     """Test that app includes telegram router."""
     # Check that router is included (we can't easily test this without running the app)
     # But we can verify the app is properly configured
     assert len(app.routes) > 0
 
 
-def test_app_client(mock_env_vars):
+def test_app_client():
     """Test app with test client."""
     client = TestClient(app)
 
@@ -53,4 +56,3 @@ def test_app_client(mock_env_vars):
     response = client.get("/docs")
     # Should either return 200 (docs) or 404 (if docs disabled)
     assert response.status_code in [200, 404]
-

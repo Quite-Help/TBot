@@ -1,14 +1,15 @@
 """Tests for app.telegram.handlers.callbacks module."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 
+from app.services.core.model import CounselorInfo
 from app.telegram.handlers.callbacks import callbacks
 
 
 @pytest.mark.asyncio
-async def test_callbacks_select_with_group_link(mock_update, mock_env_vars):
+async def test_callbacks_select_with_group_link(mock_update):
     """Test callback handler for select action with existing group link."""
     mock_update.callback_query.data = "select:counselor_1"
 
@@ -17,11 +18,14 @@ async def test_callbacks_select_with_group_link(mock_update, mock_env_vars):
     mock_counselor.name = "John Doe"
     mock_counselor.bio = "Test bio"
 
-    with patch(
-        "app.telegram.handlers.callbacks.get_counselor", new_callable=AsyncMock
-    ) as mock_get_counselor, patch(
-        "app.telegram.handlers.callbacks.get_group_link", new_callable=AsyncMock
-    ) as mock_get_group_link:
+    with (
+        patch(
+            "app.telegram.handlers.callbacks.get_counselor", new_callable=AsyncMock
+        ) as mock_get_counselor,
+        patch(
+            "app.telegram.handlers.callbacks.get_group_link", new_callable=AsyncMock
+        ) as mock_get_group_link,
+    ):
         mock_get_counselor.return_value = mock_counselor
         mock_get_group_link.return_value = "https://t.me/test_group"
 
@@ -29,7 +33,9 @@ async def test_callbacks_select_with_group_link(mock_update, mock_env_vars):
 
         # Verify API calls
         mock_get_counselor.assert_called_once_with("counselor_1")
-        mock_get_group_link.assert_called_once_with(mock_update.callback_query.message.chat.id, "counselor_1")
+        mock_get_group_link.assert_called_once_with(
+            mock_update.callback_query.message.chat.id, "counselor_1"
+        )
 
         # Verify message was edited
         mock_update.callback_query.message.edit_text.assert_called_once()
@@ -41,13 +47,13 @@ async def test_callbacks_select_with_group_link(mock_update, mock_env_vars):
 
         # Check keyboard has "Open Chat" button
         keyboard = call_args[1]["reply_markup"].inline_keyboard
-        assert len(keyboard) == 2
+        assert len(keyboard) == 2  # noqa: PLR2004
         assert keyboard[0][0].text == "Open Chat"
         assert keyboard[0][0].url == "https://t.me/test_group"
 
 
 @pytest.mark.asyncio
-async def test_callbacks_select_without_group_link(mock_update, mock_env_vars):
+async def test_callbacks_select_without_group_link(mock_update):
     """Test callback handler for select action without group link."""
     mock_update.callback_query.data = "select:counselor_1"
 
@@ -56,11 +62,14 @@ async def test_callbacks_select_without_group_link(mock_update, mock_env_vars):
     mock_counselor.name = "John Doe"
     mock_counselor.bio = "Test bio"
 
-    with patch(
-        "app.telegram.handlers.callbacks.get_counselor", new_callable=AsyncMock
-    ) as mock_get_counselor, patch(
-        "app.telegram.handlers.callbacks.get_group_link", new_callable=AsyncMock
-    ) as mock_get_group_link:
+    with (
+        patch(
+            "app.telegram.handlers.callbacks.get_counselor", new_callable=AsyncMock
+        ) as mock_get_counselor,
+        patch(
+            "app.telegram.handlers.callbacks.get_group_link", new_callable=AsyncMock
+        ) as mock_get_group_link,
+    ):
         mock_get_counselor.return_value = mock_counselor
         mock_get_group_link.return_value = None
 
@@ -74,7 +83,7 @@ async def test_callbacks_select_without_group_link(mock_update, mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_callbacks_start_session(mock_update, mock_env_vars):
+async def test_callbacks_start_session(mock_update):
     """Test callback handler for start session action."""
     mock_update.callback_query.data = "start:counselor_1"
 
@@ -99,16 +108,15 @@ async def test_callbacks_start_session(mock_update, mock_env_vars):
 
         # Check keyboard
         keyboard = call_args[1]["reply_markup"].inline_keyboard
-        assert len(keyboard) == 2
+        assert len(keyboard) == 2  # noqa: PLR2004
         assert keyboard[0][0].text == "Open Chat"
         assert keyboard[0][0].url == "https://t.me/session123"
         assert keyboard[1][0].text == "Back to Home"
 
 
 @pytest.mark.asyncio
-async def test_callbacks_home(mock_update, mock_env_vars):
+async def test_callbacks_home(mock_update):
     """Test callback handler for home action."""
-    from app.services.core.model import CounselorInfo
 
     mock_update.callback_query.data = "home"
 
@@ -118,11 +126,14 @@ async def test_callbacks_home(mock_update, mock_env_vars):
         CounselorInfo(id="2", name="Jane Smith"),
     ]
 
-    with patch(
-        "app.telegram.handlers.callbacks.create_or_get_alias", new_callable=AsyncMock
-    ) as mock_alias_func, patch(
-        "app.telegram.handlers.callbacks.get_counselors", new_callable=AsyncMock
-    ) as mock_counselors_func:
+    with (
+        patch(
+            "app.telegram.handlers.callbacks.create_or_get_alias", new_callable=AsyncMock
+        ) as mock_alias_func,
+        patch(
+            "app.telegram.handlers.callbacks.get_counselors", new_callable=AsyncMock
+        ) as mock_counselors_func,
+    ):
         mock_alias_func.return_value = mock_alias
         mock_counselors_func.return_value = mock_counselors
 
@@ -139,7 +150,6 @@ async def test_callbacks_home(mock_update, mock_env_vars):
 
         # Check keyboard
         keyboard = call_args[1]["reply_markup"].inline_keyboard
-        assert len(keyboard) == 2
+        assert len(keyboard) == 2  # noqa: PLR2004
         assert keyboard[0][0].text == "John Doe"
         assert keyboard[1][0].text == "Jane Smith"
-

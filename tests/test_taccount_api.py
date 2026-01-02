@@ -1,4 +1,5 @@
 """Tests for app.services.taccount.api module."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
@@ -9,7 +10,7 @@ from app.services.taccount.model import CreateSessionResponse
 
 
 @pytest.mark.asyncio
-async def test_create_session_success(mock_env_vars):
+async def test_create_session_success():
     """Test successful session creation."""
     mock_response_data = {"user_group_link": "https://t.me/session123"}
 
@@ -31,7 +32,7 @@ async def test_create_session_success(mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_create_session_http_error(mock_env_vars):
+async def test_create_session_http_error():
     """Test session creation with HTTP error."""
     with patch("httpx.AsyncClient") as mock_client:
         mock_response = MagicMock()
@@ -49,7 +50,7 @@ async def test_create_session_http_error(mock_env_vars):
 
 
 @pytest.mark.asyncio
-async def test_create_session_request_payload(mock_env_vars):
+async def test_create_session_request_payload():
     """Test that create_session sends correct payload."""
     mock_response_data = {"user_group_link": "https://t.me/session123"}
 
@@ -69,6 +70,5 @@ async def test_create_session_request_payload(mock_env_vars):
         # Verify the post was called with correct payload
         mock_post.assert_called_once()
         call_args = mock_post.call_args
-        assert call_args[1]["json"]["telegram_user_id"] == 12345
+        assert call_args[1]["json"]["telegram_user_id"] == 12345  # noqa: PLR2004
         assert call_args[1]["json"]["counselor_id"] == "counselor_1"
-
