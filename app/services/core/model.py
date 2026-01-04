@@ -18,6 +18,7 @@ class CounselorsResponse(BaseModel):
 
 class CounselorResponse(BaseModel):
     id: str
+    telegram_user_id: str
     name: str
     bio: str
 

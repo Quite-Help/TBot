@@ -1,10 +1,19 @@
+import logging
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackQueryHandler, ContextTypes
 
-from app.services.core.api import create_or_get_alias, get_counselor, get_counselors, get_group_link
+from app.services.core.api import (
+    create_group,
+    create_or_get_alias,
+    get_counselor,
+    get_counselors,
+    get_group_link,
+)
 from app.services.taccount.api import create_session
 from app.telegram.handlers.start import welcome_message
 
+logger = logging.getLogger(__name__)
 
 async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -34,6 +43,13 @@ async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
     elif data.startswith("start:"):
         counselor_id = data.split(":")[1]
         session = await create_session(chat_id, counselor_id)
+        try:
+            user_alias = await create_or_get_alias(chat_id)
+            await create_group(user_alias, session.user_group_link, session.user_group_id, counselor_id, session.counselor_group_id)
+        except Exception:
+            #TODO: delete group if core api data creation fails to avoid zombie groups
+            logger.exception("Error creating records for user and counselor group in core api when start handler is called")
+            raise
 
         await query.message.edit_text(
             "Your counseling session is ready.\n\nClick the button below to open the chat.",

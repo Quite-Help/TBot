@@ -64,10 +64,11 @@ class TestCounselorResponse:
 
     def test_counselor_response_creation(self):
         """Test creating a CounselorResponse instance."""
-        response = CounselorResponse(id="1", name="John Doe", bio="Test bio")
+        response = CounselorResponse(id="1", name="John Doe", bio="Test bio", telegram_user_id="54321")
         assert response.id == "1"
         assert response.name == "John Doe"
         assert response.bio == "Test bio"
+        assert response.telegram_user_id == "54321"
 
 
 class TestResolveGroupResponse:
@@ -99,5 +100,7 @@ class TestCreateSessionResponse:
 
     def test_create_session_response_creation(self):
         """Test creating a CreateSessionResponse instance."""
-        response = CreateSessionResponse(user_group_link="https://t.me/session123")
+        response = CreateSessionResponse(user_group_link="https://t.me/session123", counselor_group_id="54321", user_group_id="12345")
         assert response.user_group_link == "https://t.me/session123"
+        assert response.counselor_group_id == "54321"
+        assert response.user_group_id == "12345"

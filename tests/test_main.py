@@ -14,11 +14,14 @@ async def test_lifespan_startup_shutdown():
     """Test lifespan context manager startup and shutdown."""
     with (
         patch("app.main.telegram_app") as mock_telegram_app,
+        patch("app.main.telegram_client") as mock_telegram_client,
         patch("app.main.set_webhook", new_callable=AsyncMock) as mock_set_webhook,
         patch("httpx.AsyncClient") as mock_httpx,
     ):
         mock_telegram_app.initialize = AsyncMock()
         mock_telegram_app.shutdown = AsyncMock()
+
+        mock_telegram_client.start = AsyncMock()
 
         mock_client_instance = AsyncMock()
         mock_client_instance.aclose = AsyncMock()
@@ -28,6 +31,7 @@ async def test_lifespan_startup_shutdown():
             # During context (startup complete)
             mock_telegram_app.initialize.assert_called_once()
             mock_set_webhook.assert_called_once()
+            mock_telegram_client.start.assert_called_once()
 
         # After context (shutdown complete)
         mock_telegram_app.shutdown.assert_called_once()

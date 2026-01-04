@@ -9,12 +9,13 @@ from app.services.core.model import (
     GroupLinkResponse,
     ResolveGroupResponse,
 )
+from app.util.hash import get_hash
 
 
 async def create_or_get_alias(telegram_user_id: int) -> str:
     async with httpx.AsyncClient() as client:
         r = await client.post(
-            f"{settings.core_api_base}/aliases", json={"telegram_user_id": telegram_user_id}
+            f"{settings.core_api_base}/aliases", json={"telegram_user_id": get_hash(str(telegram_user_id))}
         )
         r.raise_for_status()
         response = AliasResponse(**r.json())
@@ -41,7 +42,7 @@ async def get_group_link(telegram_user_id: int, counselor_id: str) -> str | None
         r = await client.post(
             f"{settings.core_api_base}/groups",
             json={
-                "telegram_user_id": telegram_user_id,
+                "telegram_user_id": get_hash(str(telegram_user_id)),
                 "counselor_id": counselor_id,
             },
         )
@@ -53,8 +54,23 @@ async def get_group_link(telegram_user_id: int, counselor_id: str) -> str | None
 async def resolve_group(group_id: int) -> ResolveGroupResponse:
     async with httpx.AsyncClient() as client:
         r = await client.post(
-            f"{settings.core_api_base}/sessions/resolve",
+            f"{settings.core_api_base}/groups/resolve",
             json={"group_id": group_id},
         )
         r.raise_for_status()
         return ResolveGroupResponse(**r.json())
+
+
+async def create_group(user_alias: str, user_group_link: str, user_group_id: str, counselor_id: str, counselor_group_id: str) -> None:
+    async with httpx.AsyncClient() as client:
+        r = await client.post(
+            f"{settings.core_api_base}/groups",
+            json={
+                "user_alias": user_alias,
+                "user_group_link": user_group_link,
+                "user_group_id": user_group_id,
+                "counselor_id": counselor_id,
+                "counselor_group_id": counselor_group_id
+            }
+        )
+        r.raise_for_status()

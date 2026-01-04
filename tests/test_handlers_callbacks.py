@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.services.core.model import CounselorInfo
+from app.services.taccount.model import CreateSessionResponse
 from app.telegram.handlers.callbacks import callbacks
 
 
@@ -85,21 +86,36 @@ async def test_callbacks_select_without_group_link(mock_update):
 @pytest.mark.asyncio
 async def test_callbacks_start_session(mock_update):
     """Test callback handler for start session action."""
-    mock_update.callback_query.data = "start:counselor_1"
+    mock_counselor_id = "counselor_1"
 
-    mock_session = MagicMock()
-    mock_session.user_group_link = "https://t.me/session123"
+    mock_update.callback_query.data = f"start:{mock_counselor_id}"
 
-    with patch(
-        "app.telegram.handlers.callbacks.create_session", new_callable=AsyncMock
-    ) as mock_create_session:
+    mock_alias = "test_alias_123"
+    mock_session = CreateSessionResponse(
+        user_group_id="user_group",
+        counselor_group_id="counseler_group",
+        user_group_link="user_group_link"
+    )
+
+    with (
+        patch("app.telegram.handlers.callbacks.create_session", new_callable=AsyncMock) as mock_create_session,
+        patch("app.telegram.handlers.callbacks.create_or_get_alias", new_callable=AsyncMock) as mock_create_or_get_alias,
+        patch("app.telegram.handlers.callbacks.create_group", new_callable=AsyncMock) as mock_create_group,
+
+    ):
+        mock_create_or_get_alias.return_value = mock_alias
         mock_create_session.return_value = mock_session
 
         await callbacks(mock_update, MagicMock())
 
-        # Verify session was created
-        mock_create_session.assert_called_once_with(
-            mock_update.callback_query.message.chat.id, "counselor_1"
+        mock_create_or_get_alias.assert_called_once_with(mock_update.effective_chat.id)
+
+        mock_create_group.assert_called_once_with(
+            mock_alias,
+            mock_session.user_group_link,
+            mock_session.user_group_id,
+            mock_counselor_id,
+            mock_session.counselor_group_id
         )
 
         # Verify message was edited
@@ -110,7 +126,7 @@ async def test_callbacks_start_session(mock_update):
         keyboard = call_args[1]["reply_markup"].inline_keyboard
         assert len(keyboard) == 2  # noqa: PLR2004
         assert keyboard[0][0].text == "Open Chat"
-        assert keyboard[0][0].url == "https://t.me/session123"
+        assert keyboard[0][0].url == mock_session.user_group_link
         assert keyboard[1][0].text == "Back to Home"
 
 

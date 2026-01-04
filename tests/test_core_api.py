@@ -91,7 +91,7 @@ async def test_get_counselors_success():
 @pytest.mark.asyncio
 async def test_get_counselor_success():
     """Test successful counselor retrieval."""
-    mock_response_data = {"id": "1", "name": "John Doe", "bio": "Test bio"}
+    mock_response_data = {"id": "1", "name": "John Doe", "bio": "Test bio", "telegram_user_id": "21231"}
 
     with patch("httpx.AsyncClient") as mock_client:
         mock_response = MagicMock()
@@ -109,6 +109,7 @@ async def test_get_counselor_success():
         assert result.id == "1"
         assert result.name == "John Doe"
         assert result.bio == "Test bio"
+        assert result.telegram_user_id == "21231"
 
 
 @pytest.mark.asyncio
