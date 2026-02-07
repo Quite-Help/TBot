@@ -1,0 +1,12 @@
+.git
+.github
+__pycache__/
+.pytest_cache/
+.ruff_cache
+*.pyc
+.env
+tests/
+.env.example
+pyproject.toml
+pytest.ini
+README.md

@@ -1,0 +1,8 @@
+name: PR Checks
+
+on:
+  pull_request:
+
+jobs:
+  lint-and-test:
+    uses: ./.github/workflows/lint-test.yml
