@@ -15,6 +15,7 @@ from app.telegram.handlers.start import welcome_message
 
 logger = logging.getLogger(__name__)
 
+
 async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -23,7 +24,7 @@ async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
     data = query.data
 
     if data.startswith("select:"):
-        counselor_id = data.split(":")[1]
+        counselor_id = int(data.split(":")[1])
         counselor = await get_counselor(counselor_id)
         group_link = await get_group_link(chat_id, counselor_id)
 
@@ -41,14 +42,22 @@ async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data.startswith("start:"):
-        counselor_id = data.split(":")[1]
+        counselor_id = int(data.split(":")[1])
         session = await create_session(chat_id, counselor_id)
         try:
             user_alias = await create_or_get_alias(chat_id)
-            await create_group(user_alias, session.user_group_link, session.user_group_id, counselor_id, session.counselor_group_id)
+            await create_group(
+                user_alias,
+                session.user_group_link,
+                session.user_group_id,
+                counselor_id,
+                session.counselor_group_id,
+            )
         except Exception:
-            #TODO: delete group if core api data creation fails to avoid zombie groups
-            logger.exception("Error creating records for user and counselor group in core api when start handler is called")
+            # TODO: delete group if core api data creation fails to avoid zombie groups
+            logger.exception(
+                "Error creating records for user and counselor group in core api when start handler is called"
+            )
             raise
 
         await query.message.edit_text(

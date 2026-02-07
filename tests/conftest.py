@@ -12,10 +12,13 @@ _env_vars = {
     "WEBHOOK_SECRET": "test_secret",
     "PUBLIC_WEBHOOK_BASE": "https://test.com",
     "CORE_API_BASE": "https://core.test.com",
+    "CORE_API_SVC_ACCOUNT_USERNAME": "test_username",
+    "CORE_API_SVC_ACCOUNT_PASSWORD": "test_password",
+    "CORE_API_MAX_AUTH_RETIRES": "3",
     "BOT_USERNAME": "@testbot",
     "HASH_KEY": "test-hash",
     "API_KEY": "1234",
-    "API_HASH": "test-api-hash"
+    "API_HASH": "test-api-hash",
 }
 
 for key, value in _env_vars.items():

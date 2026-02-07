@@ -28,6 +28,9 @@ def test_settings_initialization(mock_env_vars):
         api_hash=mock_env_vars["API_HASH"],
         bot_username=mock_env_vars["BOT_USERNAME"],
         hash_key=mock_env_vars["HASH_KEY"].encode(),
+        core_api_svc_account_username=mock_env_vars["CORE_API_SVC_ACCOUNT_USERNAME"],
+        core_api_svc_account_password=mock_env_vars["CORE_API_SVC_ACCOUNT_PASSWORD"],
+        core_api_max_auth_retires=mock_env_vars["CORE_API_MAX_AUTH_RETIRES"],
     )
 
     assert test_settings.bot_token == mock_env_vars["TELEGRAM_BOT_TOKEN"]

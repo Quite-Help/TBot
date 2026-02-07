@@ -17,7 +17,10 @@ async def test_relay_with_text_message(mock_update, mock_context):
     mock_routing.target_group_id = 67890
     mock_routing.display_name = "Test User"
 
-    with patch("app.telegram.handlers.relay.resolve_group", new_callable=AsyncMock) as mock_resolve:
+    with (
+        patch("app.telegram.handlers.relay.resolve_group", new_callable=AsyncMock) as mock_resolve,
+        patch("app.telegram.handlers.relay.telegram_app.bot", new_callable=AsyncMock) as mock_bot,
+    ):
         mock_resolve.return_value = mock_routing
 
         await relay(mock_update, mock_context)
@@ -26,9 +29,9 @@ async def test_relay_with_text_message(mock_update, mock_context):
         mock_resolve.assert_called_once_with(12345)
 
         # Verify message was sent
-        mock_context.bot.send_message.assert_called_once_with(
-            chat_id=67890,
-            text="*From: Test User*\nTest message",
+        mock_bot.send_message.assert_called_once_with(
+            chat_id=mock_routing.target_group_id,
+            text=f"*From: {mock_routing.display_name}*\n\n{mock_update.message.text}",
             parse_mode="Markdown",
         )
 

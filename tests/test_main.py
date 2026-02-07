@@ -20,6 +20,8 @@ async def test_lifespan_startup_shutdown():
     ):
         mock_telegram_app.initialize = AsyncMock()
         mock_telegram_app.shutdown = AsyncMock()
+        mock_api = MagicMock(spec=FastAPI)
+        mock_api.state = MagicMock()
 
         mock_telegram_client.start = AsyncMock()
 
@@ -27,7 +29,7 @@ async def test_lifespan_startup_shutdown():
         mock_client_instance.aclose = AsyncMock()
         mock_httpx.return_value = mock_client_instance
 
-        async with lifespan(MagicMock(spec=FastAPI)):
+        async with lifespan(mock_api):
             # During context (startup complete)
             mock_telegram_app.initialize.assert_called_once()
             mock_set_webhook.assert_called_once()

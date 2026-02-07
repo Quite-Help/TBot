@@ -10,6 +10,9 @@ class Settings(BaseModel):
     api_key: str
     api_hash: str
     bot_username: str
+    core_api_svc_account_username: str
+    core_api_svc_account_password: str
+    core_api_max_auth_retires: int
 
     core_api_base: str
 
@@ -24,5 +27,8 @@ settings = Settings(
     hash_key=os.environ["HASH_KEY"].encode(),
     api_key=os.environ["API_KEY"],
     api_hash=os.environ["API_HASH"],
-    bot_username=os.environ["BOT_USERNAME"]
+    bot_username=os.environ["BOT_USERNAME"],
+    core_api_svc_account_username=os.environ["CORE_API_SVC_ACCOUNT_USERNAME"],
+    core_api_svc_account_password=os.environ["CORE_API_SVC_ACCOUNT_PASSWORD"],
+    core_api_max_auth_retires=os.environ["CORE_API_MAX_AUTH_RETIRES"],
 )

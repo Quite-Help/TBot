@@ -12,10 +12,10 @@ from app.telegram.handlers.callbacks import callbacks
 @pytest.mark.asyncio
 async def test_callbacks_select_with_group_link(mock_update):
     """Test callback handler for select action with existing group link."""
-    mock_update.callback_query.data = "select:counselor_1"
+    mock_update.callback_query.data = "select:1"
 
     mock_counselor = MagicMock()
-    mock_counselor.id = "counselor_1"
+    mock_counselor.id = 1
     mock_counselor.name = "John Doe"
     mock_counselor.bio = "Test bio"
 
@@ -33,9 +33,9 @@ async def test_callbacks_select_with_group_link(mock_update):
         await callbacks(mock_update, MagicMock())
 
         # Verify API calls
-        mock_get_counselor.assert_called_once_with("counselor_1")
+        mock_get_counselor.assert_called_once_with(mock_counselor.id)
         mock_get_group_link.assert_called_once_with(
-            mock_update.callback_query.message.chat.id, "counselor_1"
+            mock_update.callback_query.message.chat.id, mock_counselor.id
         )
 
         # Verify message was edited
@@ -56,10 +56,10 @@ async def test_callbacks_select_with_group_link(mock_update):
 @pytest.mark.asyncio
 async def test_callbacks_select_without_group_link(mock_update):
     """Test callback handler for select action without group link."""
-    mock_update.callback_query.data = "select:counselor_1"
+    mock_update.callback_query.data = "select:1"
 
     mock_counselor = MagicMock()
-    mock_counselor.id = "counselor_1"
+    mock_counselor.id = 1
     mock_counselor.name = "John Doe"
     mock_counselor.bio = "Test bio"
 
@@ -80,28 +80,31 @@ async def test_callbacks_select_without_group_link(mock_update):
         call_args = mock_update.callback_query.message.edit_text.call_args
         keyboard = call_args[1]["reply_markup"].inline_keyboard
         assert keyboard[0][0].text == "Start Session"
-        assert keyboard[0][0].callback_data == "start:counselor_1"
+        assert keyboard[0][0].callback_data == "start:1"
 
 
 @pytest.mark.asyncio
 async def test_callbacks_start_session(mock_update):
     """Test callback handler for start session action."""
-    mock_counselor_id = "counselor_1"
+    mock_counselor_id = 1
 
     mock_update.callback_query.data = f"start:{mock_counselor_id}"
 
     mock_alias = "test_alias_123"
     mock_session = CreateSessionResponse(
-        user_group_id="user_group",
-        counselor_group_id="counseler_group",
-        user_group_link="user_group_link"
+        user_group_id=222, counselor_group_id=333, user_group_link="user_group_link"
     )
 
     with (
-        patch("app.telegram.handlers.callbacks.create_session", new_callable=AsyncMock) as mock_create_session,
-        patch("app.telegram.handlers.callbacks.create_or_get_alias", new_callable=AsyncMock) as mock_create_or_get_alias,
-        patch("app.telegram.handlers.callbacks.create_group", new_callable=AsyncMock) as mock_create_group,
-
+        patch(
+            "app.telegram.handlers.callbacks.create_session", new_callable=AsyncMock
+        ) as mock_create_session,
+        patch(
+            "app.telegram.handlers.callbacks.create_or_get_alias", new_callable=AsyncMock
+        ) as mock_create_or_get_alias,
+        patch(
+            "app.telegram.handlers.callbacks.create_group", new_callable=AsyncMock
+        ) as mock_create_group,
     ):
         mock_create_or_get_alias.return_value = mock_alias
         mock_create_session.return_value = mock_session
@@ -115,7 +118,7 @@ async def test_callbacks_start_session(mock_update):
             mock_session.user_group_link,
             mock_session.user_group_id,
             mock_counselor_id,
-            mock_session.counselor_group_id
+            mock_session.counselor_group_id,
         )
 
         # Verify message was edited

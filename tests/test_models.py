@@ -7,7 +7,6 @@ from app.services.core.model import (
     AliasResponse,
     CounselorInfo,
     CounselorResponse,
-    CounselorsResponse,
     GroupLinkResponse,
     ResolveGroupResponse,
 )
@@ -19,14 +18,14 @@ class TestCounselorInfo:
 
     def test_counselor_info_creation(self):
         """Test creating a CounselorInfo instance."""
-        counselor = CounselorInfo(id="1", name="John Doe")
-        assert counselor.id == "1"
+        counselor = CounselorInfo(id=1, name="John Doe")
+        assert counselor.id == 1
         assert counselor.name == "John Doe"
 
     def test_counselor_info_validation(self):
         """Test CounselorInfo validation."""
         with pytest.raises(pydantic.ValidationError):  # Pydantic validation error
-            CounselorInfo(id="1")  # Missing name
+            CounselorInfo(id=1)  # Missing name
 
 
 class TestAliasResponse:
@@ -44,31 +43,16 @@ class TestAliasResponse:
         assert not hasattr(response, "extra_field")
 
 
-class TestCounselorsResponse:
-    """Tests for CounselorsResponse model."""
-
-    def test_counselors_response_creation(self):
-        """Test creating a CounselorsResponse instance."""
-        counselors = [
-            CounselorInfo(id="1", name="John"),
-            CounselorInfo(id="2", name="Jane"),
-        ]
-        response = CounselorsResponse(counselors=counselors)
-        assert len(response.counselors) == 2  # noqa: PLR2004
-        assert response.counselors[0].name == "John"
-        assert response.counselors[1].name == "Jane"
-
-
 class TestCounselorResponse:
     """Tests for CounselorResponse model."""
 
     def test_counselor_response_creation(self):
         """Test creating a CounselorResponse instance."""
-        response = CounselorResponse(id="1", name="John Doe", bio="Test bio", telegram_user_id="54321")
-        assert response.id == "1"
+        response = CounselorResponse(id=1, name="John Doe", bio="Test bio", telegram_user_id=54321)
+        assert response.id == 1
         assert response.name == "John Doe"
         assert response.bio == "Test bio"
-        assert response.telegram_user_id == "54321"
+        assert response.telegram_user_id == 54321  # noqa: PLR2004
 
 
 class TestResolveGroupResponse:
@@ -100,7 +84,9 @@ class TestCreateSessionResponse:
 
     def test_create_session_response_creation(self):
         """Test creating a CreateSessionResponse instance."""
-        response = CreateSessionResponse(user_group_link="https://t.me/session123", counselor_group_id="54321", user_group_id="12345")
+        response = CreateSessionResponse(
+            user_group_link="https://t.me/session123", counselor_group_id=54321, user_group_id=12345
+        )
         assert response.user_group_link == "https://t.me/session123"
-        assert response.counselor_group_id == "54321"
-        assert response.user_group_id == "12345"
+        assert response.counselor_group_id == 54321  # noqa: PLR2004
+        assert response.user_group_id == 12345  # noqa: PLR2004
