@@ -1,4 +1,5 @@
 from httpx import HTTPStatusError
+
 from app.config import settings
 from app.services.core.auth import auth_client
 from app.services.core.model import (
