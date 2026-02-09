@@ -172,3 +172,38 @@ async def test_callbacks_home(mock_update):
         assert len(keyboard) == 2  # noqa: PLR2004
         assert keyboard[0][0].text == "John Doe"
         assert keyboard[1][0].text == "Jane Smith"
+
+
+@pytest.mark.asyncio
+async def test_callbacks_start_session_logs_and_reraises_on_create_group_error(mock_update):
+    """Test that start session callback logs and re-raises exceptions from create_group."""
+    mock_counselor_id = 1
+    mock_update.callback_query.data = f"start:{mock_counselor_id}"
+
+    mock_alias = "test_alias_123"
+    mock_session = CreateSessionResponse(
+        user_group_id=222, counselor_group_id=333, user_group_link="user_group_link"
+    )
+
+    with (
+        patch(
+            "app.telegram.handlers.callbacks.create_session", new_callable=AsyncMock
+        ) as mock_create_session,
+        patch(
+            "app.telegram.handlers.callbacks.create_or_get_alias", new_callable=AsyncMock
+        ) as mock_create_or_get_alias,
+        patch(
+            "app.telegram.handlers.callbacks.create_group", new_callable=AsyncMock
+        ) as mock_create_group,
+        patch("app.telegram.handlers.callbacks.logger") as mock_logger,
+    ):
+        mock_create_or_get_alias.return_value = mock_alias
+        mock_create_session.return_value = mock_session
+        mock_create_group.side_effect = Exception("Core API error")
+
+        with pytest.raises(Exception, match="Core API error"):
+            await callbacks(mock_update, MagicMock())
+
+        # Verify logger.exception was called
+        mock_logger.exception.assert_called_once()
+        assert "Error creating records" in mock_logger.exception.call_args[0][0]

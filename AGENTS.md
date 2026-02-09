@@ -1,4 +1,8 @@
-## TBot Service
+# AGENTS.md
+
+This file provides guidance to WARP (warp.dev) when working with code in this repository.
+
+## Project Overview
 
 TBot is a Telegram bot service that facilitates anonymous, privacy-preserving conversations between users and counselors. Users receive aliases (nicknames) instead of exposing their real Telegram identities. The bot creates separate Telegram groups for each user-counselor pair and relays messages between them.
 
