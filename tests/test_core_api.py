@@ -7,6 +7,7 @@ import pytest
 
 from app.config import settings
 from app.services.core.api import (
+    create_group,
     create_or_get_alias,
     get_counselor,
     get_counselors,
@@ -211,3 +212,82 @@ async def test_resolve_group_success():
         )
         assert isinstance(result, ResolveGroupResponse)
         assert result.target_group_id == t_id
+
+
+@pytest.mark.asyncio
+async def test_get_group_link_raises_non_404_error():
+    """Test that get_group_link re-raises non-404 HTTP errors."""
+    t_id, c_id = 12345, 99
+    hashed_user = "hashed-12345"
+
+    mock_response = MagicMock(spec=httpx.Response)
+    mock_response.status_code = 500
+    mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+        message="Internal Server Error",
+        request=MagicMock(spec=httpx.Request),
+        response=mock_response,
+    )
+
+    with (
+        patch("app.services.core.api.auth_client.post", new_callable=AsyncMock) as mock_post,
+        patch("app.services.core.api.get_hash", return_value=hashed_user),
+    ):
+        mock_post.return_value = mock_response
+
+        with pytest.raises(httpx.HTTPStatusError) as excinfo:
+            await get_group_link(t_id, c_id)
+
+        assert excinfo.value.response.status_code == 500  # noqa: PLR2004
+
+
+@pytest.mark.asyncio
+async def test_get_group_link_returns_none_on_404():
+    """Test that get_group_link returns None on 404 error."""
+    t_id, c_id = 12345, 99
+    hashed_user = "hashed-12345"
+
+    mock_response = MagicMock(spec=httpx.Response)
+    mock_response.status_code = 404
+    mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+        message="Not Found",
+        request=MagicMock(spec=httpx.Request),
+        response=mock_response,
+    )
+
+    with (
+        patch("app.services.core.api.auth_client.post", new_callable=AsyncMock) as mock_post,
+        patch("app.services.core.api.get_hash", return_value=hashed_user),
+    ):
+        mock_post.return_value = mock_response
+
+        result = await get_group_link(t_id, c_id)
+
+        assert result is None
+
+
+@pytest.mark.asyncio
+async def test_create_group_success():
+    """Test successful group creation."""
+    user_alias = "test_alias"
+    user_group_link = "https://t.me/test_group"
+    user_group_id = 111
+    counselor_id = 222
+    counselor_group_id = 333
+
+    with patch("app.services.core.api.auth_client.post", new_callable=AsyncMock) as mock_post:
+        mock_response = MagicMock()
+        mock_response.raise_for_status = MagicMock()
+        mock_post.return_value = mock_response
+
+        await create_group(
+            user_alias,
+            user_group_link,
+            user_group_id,
+            counselor_id,
+            counselor_group_id,
+        )
+
+        mock_post.assert_called_once()
+        call_args = mock_post.call_args
+        assert call_args[0][0] == f"{settings.core_api_base}/groups"
+        mock_response.raise_for_status.assert_called_once()

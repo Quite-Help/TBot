@@ -4,7 +4,11 @@ import pytest
 from telegram import ChatMember
 
 from app.services.core.model import CounselorResponse
-from app.services.taccount.api import create_session, get_telegram_group_link
+from app.services.taccount.api import (
+    create_session,
+    create_telegram_group,
+    get_telegram_group_link,
+)
 from app.services.taccount.model import CreateSessionResponse
 
 
@@ -103,3 +107,60 @@ async def test_get_telegram_group_link_returns_invite_link():
         telegram_app.bot.create_chat_invite_link.assert_awaited_once_with(
             chat_id=group_id, name="Auto-generated invite link"
         )
+
+
+@pytest.mark.asyncio
+async def test_get_telegram_group_link_raises_when_bot_not_admin():
+    """Test that get_telegram_group_link raises RuntimeError when bot is not admin."""
+    group_id = 999
+    mock_member = MagicMock()
+    mock_member.status = ChatMember.MEMBER  # Not admin or owner
+
+    with patch("app.services.taccount.api.telegram_app") as telegram_app:
+        telegram_app.bot.get_chat_member = AsyncMock(return_value=mock_member)
+
+        with pytest.raises(RuntimeError, match="Bot must be admin to create invite links"):
+            await get_telegram_group_link(group_id)
+
+
+@pytest.mark.asyncio
+async def test_create_telegram_group_success():
+    """Test successful Telegram group creation with migration to supergroup."""
+    bot_entity = MagicMock()
+    target_user_id = 12345
+    group_name = "Test Group"
+    basic_chat_id = 100
+    supergroup_id = 200
+
+    # Mock the created chat response
+    mock_basic_chat = MagicMock()
+    mock_basic_chat.id = basic_chat_id
+
+    mock_created_chat = MagicMock()
+    mock_created_chat.updates.chats = [mock_basic_chat]
+
+    # Mock the migrate result
+    mock_supergroup = MagicMock()
+    mock_supergroup.id = supergroup_id
+
+    mock_migrate_result = MagicMock()
+    mock_migrate_result.chats = [MagicMock(), mock_supergroup]  # Second chat is supergroup
+
+    # Mock the user object for get_me
+    mock_me = MagicMock()
+    mock_me.id = 999
+    mock_me_input = MagicMock()
+
+    # Create an AsyncMock that acts as both callable and has attributes
+    mock_client = AsyncMock(
+        side_effect=[mock_created_chat, mock_migrate_result, None, None],
+    )
+    mock_client.get_me = AsyncMock(return_value=mock_me)
+    mock_client.get_input_entity = AsyncMock(return_value=mock_me_input)
+
+    with patch("app.services.taccount.api.telegram_client", mock_client):
+        result = await create_telegram_group(bot_entity, target_user_id, group_name)
+
+        assert result == supergroup_id
+        mock_client.get_me.assert_awaited_once()
+        mock_client.get_input_entity.assert_awaited_once_with(mock_me.id)

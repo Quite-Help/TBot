@@ -1,0 +1,42 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./nginx-local.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app_instance_1
+      - app_instance_2
+      - app_instance_3
+    restart: unless-stopped
+
+  app_instance_1:
+    build: .
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  app_instance_2:
+    build: .
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  app_instance_3:
+    build: .
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
