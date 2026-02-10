@@ -33,8 +33,8 @@ class BearerAuthWithRefresh(httpx.Auth):
     async def _async_get_new_token(self):
         """Calls the /token endpoint to generate a new token."""
         # Note: We use a separate client to avoid recursion issues
-        with httpx.Client() as client:
-            response = client.post(self.token_url, data=self.client_credentials.model_dump_json())
+        async with httpx.AsyncClient() as client:
+            response = await client.post(self.token_url, data=self.client_credentials.model_dump_json())
             if response.status_code != HTTPStatus.OK:
                 # Forward the error gotten from /token if refresh fails
                 response.raise_for_status()

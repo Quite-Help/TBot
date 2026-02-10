@@ -18,15 +18,26 @@ logger = logging.getLogger(__name__)
 
 async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
+    if query is None:
+        print(f"Update callback query is empty: {update}")
+        return
+
     await query.answer()
 
-    chat_id = query.message.chat.id
+    if query.message is None:
+        print(f"Message does not contain chat: {query}")
+        return
+    user_id = query.from_user.id
     data = query.data
+
+    if data is None or not (data.startswith("select:")  or data.startswith("start:") or data == "home"):
+        print(f"Unexpected data received: {data}")
+        return
 
     if data.startswith("select:"):
         counselor_id = int(data.split(":")[1])
         counselor = await get_counselor(counselor_id)
-        group_link = await get_group_link(chat_id, counselor_id)
+        group_link = await get_group_link(user_id, counselor_id)
 
         keyboard = [
             [InlineKeyboardButton("Open Chat", url=group_link)]
@@ -43,9 +54,9 @@ async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
 
     elif data.startswith("start:"):
         counselor_id = int(data.split(":")[1])
-        session = await create_session(chat_id, counselor_id)
+        session = await create_session(user_id, counselor_id)
         try:
-            user_alias = await create_or_get_alias(chat_id)
+            user_alias = await create_or_get_alias(user_id)
             await create_group(
                 user_alias,
                 session.user_group_link,
@@ -71,7 +82,7 @@ async def callbacks(update: Update, _context: ContextTypes.DEFAULT_TYPE):
         )
 
     elif data == "home":
-        alias = await create_or_get_alias(chat_id)
+        alias = await create_or_get_alias(user_id)
         counselors = await get_counselors()
         keyboard = [
             [InlineKeyboardButton(c.name, callback_data=f"select:{c.id}")] for c in counselors

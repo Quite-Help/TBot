@@ -34,7 +34,6 @@ async def test_create_session_happy_path():
         patch(
             "app.services.taccount.api.telegram_client.get_input_entity", new_callable=AsyncMock
         ) as mock_get_input_entity,
-        patch("app.services.taccount.api.get_hash") as mock_get_hash,
         patch("app.services.taccount.api.settings") as mock_setting,
         patch(
             "app.services.taccount.api.create_or_get_alias", new_callable=AsyncMock
@@ -57,7 +56,6 @@ async def test_create_session_happy_path():
         # Arrange
         mock_setting.bot_username = "bot-username"
         mock_get_counselor.return_value = counselor
-        mock_get_hash.return_value = "hashed-user-id"
         mock_get_input_entity.return_value = mock_get_input_entity
         mock_create_or_get_alias.return_value = "anon123"
         mock_create_telegram_group.side_effect = create_telegram_group_side_effects
@@ -73,8 +71,7 @@ async def test_create_session_happy_path():
         assert result.counselor_group_id == counselor_group_id
 
         mock_get_counselor.assert_awaited_once_with(counselor_id)
-        mock_get_hash.assert_called_once_with(str(telegram_user_id))
-        mock_create_or_get_alias.assert_awaited_once_with("hashed-user-id")
+        mock_create_or_get_alias.assert_awaited_once_with(telegram_user_id)
         mock_get_input_entity.assert_called_once_with("bot-username")
 
         mock_create_telegram_group.assert_any_await(
@@ -149,18 +146,13 @@ async def test_create_telegram_group_success():
     # Mock the user object for get_me
     mock_me = MagicMock()
     mock_me.id = 999
-    mock_me_input = MagicMock()
 
     # Create an AsyncMock that acts as both callable and has attributes
     mock_client = AsyncMock(
         side_effect=[mock_created_chat, mock_migrate_result, None, None],
     )
-    mock_client.get_me = AsyncMock(return_value=mock_me)
-    mock_client.get_input_entity = AsyncMock(return_value=mock_me_input)
 
     with patch("app.services.taccount.api.telegram_client", mock_client):
         result = await create_telegram_group(bot_entity, target_user_id, group_name)
 
         assert result == supergroup_id
-        mock_client.get_me.assert_awaited_once()
-        mock_client.get_input_entity.assert_awaited_once_with(mock_me.id)

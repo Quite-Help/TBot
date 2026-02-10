@@ -7,13 +7,13 @@ from app.services.core.api import create_or_get_alias, get_counselor
 from app.services.taccount.model import CreateSessionResponse
 from app.telegram.app import telegram_app
 from app.telegram.client import telegram_client
-from app.util.hash import get_hash
+from app.util.helpers import sanitize_supergroup_id_to_negative
 
 
 async def create_session(telegram_user_id: int, counselor_id: int) -> CreateSessionResponse:
     bot_entity = await telegram_client.get_input_entity(settings.bot_username)
     counselor = await get_counselor(counselor_id)
-    user_alias = await create_or_get_alias(get_hash(str(telegram_user_id)))
+    user_alias = await create_or_get_alias(telegram_user_id)
     counselor_group_id = await create_telegram_group(
         bot_entity, counselor.telegram_user_id, f"Counseling with {user_alias}"
     )
@@ -70,13 +70,9 @@ async def create_telegram_group(bot_entity, target_user_id, group_name: str) -> 
     print("Bot promoted to admin")
 
     # Remove service account (creator)
-    me = await telegram_client.get_me()  # returns a User object
-    me_input = await telegram_client.get_input_entity(me.id)
     await telegram_client(
-        functions.channels.EditBannedRequest(
+        functions.channels.LeaveChannelRequest(
             channel=supergroup_id,
-            participant=me_input,
-            banned_rights=types.ChatBannedRights(view_messages=True, until_date=None),
         )
     )
     print("Service account removed")
@@ -85,7 +81,8 @@ async def create_telegram_group(bot_entity, target_user_id, group_name: str) -> 
 
 
 async def get_telegram_group_link(group_chat_id: int) -> str:
-    member = await telegram_app.bot.get_chat_member(group_chat_id, telegram_app.bot.id)
+    print(f"Group chat id: {group_chat_id}")
+    member = await telegram_app.bot.get_chat_member(sanitize_supergroup_id_to_negative(group_chat_id), telegram_app.bot.id)
     if member.status not in (
         ChatMemberStatus.ADMINISTRATOR,
         ChatMemberStatus.OWNER,

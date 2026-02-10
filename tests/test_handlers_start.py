@@ -15,8 +15,8 @@ async def test_start_handler_success(mock_update):
 
     mock_alias = "test_alias_123"
     mock_counselors = [
-        CounselorInfo(id="1", name="John Doe"),
-        CounselorInfo(id="2", name="Jane Smith"),
+        CounselorInfo(id=1, name="John Doe"),
+        CounselorInfo(id=2, name="Jane Smith"),
     ]
 
     with (
@@ -33,7 +33,7 @@ async def test_start_handler_success(mock_update):
         await start(mock_update, MagicMock())
 
         # Verify API calls
-        mock_alias_func.assert_called_once_with(mock_update.effective_chat.id)
+        mock_alias_func.assert_called_once_with(mock_update.effective_user.id)
         mock_counselors_func.assert_called_once()
 
         # Verify message was sent

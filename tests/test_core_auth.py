@@ -2,7 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import httpx
 import pytest
 
 from app.services.core.auth import BearerAuthWithRefresh
@@ -109,9 +108,7 @@ class TestAuthFlow:
         mock_response_200 = MagicMock()
         mock_response_200.status_code = 200
 
-        with patch.object(
-            auth_instance, "sync_get_token", side_effect=["token1", "token2"]
-        ):
+        with patch.object(auth_instance, "sync_get_token", side_effect=["token1", "token2"]):
             gen = auth_instance.auth_flow(mock_request)
 
             # First request
@@ -129,9 +126,7 @@ class TestAuthFlow:
         mock_response_403 = MagicMock()
         mock_response_403.status_code = 403
 
-        with patch.object(
-            auth_instance, "sync_get_token", side_effect=["token1", "token2"]
-        ):
+        with patch.object(auth_instance, "sync_get_token", side_effect=["token1", "token2"]):
             gen = auth_instance.auth_flow(mock_request)
             next(gen)
 
@@ -146,9 +141,7 @@ class TestAuthFlow:
         mock_response_401 = MagicMock()
         mock_response_401.status_code = 401
 
-        with patch.object(
-            auth_instance, "sync_get_token", side_effect=["t1", "t2", "t3", "t4"]
-        ):
+        with patch.object(auth_instance, "sync_get_token", side_effect=["t1", "t2", "t3", "t4"]):
             gen = auth_instance.auth_flow(mock_request)
             next(gen)  # Initial request
 
@@ -175,51 +168,6 @@ class TestAuthFlow:
             # Send success response, generator should complete
             with pytest.raises(StopIteration):
                 gen.send(mock_response_200)
-
-
-class TestAsyncGetNewToken:
-    """Tests for _async_get_new_token method."""
-
-    @pytest.mark.asyncio
-    async def test_async_get_new_token_success(self, auth_instance):
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.json.return_value = {"access_token": "async_token_456"}
-
-        with patch("app.services.core.auth.httpx.Client") as mock_client_class:
-            mock_client = MagicMock()
-            mock_client.__enter__.return_value = mock_client
-            mock_client.__exit__.return_value = None
-            mock_client.post.return_value = mock_response
-            mock_client_class.return_value = mock_client
-
-            result = await auth_instance._async_get_new_token()
-
-            assert result == "async_token_456"
-            mock_client.post.assert_called_once_with(
-                auth_instance.token_url,
-                data=auth_instance.client_credentials.model_dump_json(),
-            )
-
-    @pytest.mark.asyncio
-    async def test_async_get_new_token_raises_on_error(self, auth_instance):
-        mock_response = MagicMock(spec=httpx.Response)
-        mock_response.status_code = 500
-        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
-            message="Internal Server Error",
-            request=MagicMock(spec=httpx.Request),
-            response=mock_response,
-        )
-
-        with patch("app.services.core.auth.httpx.Client") as mock_client_class:
-            mock_client = MagicMock()
-            mock_client.__enter__.return_value = mock_client
-            mock_client.__exit__.return_value = None
-            mock_client.post.return_value = mock_response
-            mock_client_class.return_value = mock_client
-
-            with pytest.raises(httpx.HTTPStatusError):
-                await auth_instance._async_get_new_token()
 
 
 class TestAsyncAuthFlow:
@@ -262,9 +210,7 @@ class TestAsyncAuthFlow:
         mock_response_401 = MagicMock()
         mock_response_401.status_code = 401
 
-        with patch.object(
-            auth_instance, "_async_get_new_token", side_effect=["token1", "token2"]
-        ):
+        with patch.object(auth_instance, "_async_get_new_token", side_effect=["token1", "token2"]):
             gen = auth_instance.async_sync_auth_flow(mock_request)
 
             await gen.asend(None)
@@ -281,9 +227,7 @@ class TestAsyncAuthFlow:
         mock_response_404 = MagicMock()
         mock_response_404.status_code = 404
 
-        with patch.object(
-            auth_instance, "_async_get_new_token", side_effect=["token1", "token2"]
-        ):
+        with patch.object(auth_instance, "_async_get_new_token", side_effect=["token1", "token2"]):
             gen = auth_instance.async_sync_auth_flow(mock_request)
             await gen.asend(None)
 

@@ -14,6 +14,7 @@ from app.services.core.model import (
     ResolveGroupResponse,
 )
 from app.util.hash import get_hash
+from app.util.helpers import sanitize_supergroup_id_to_negative
 
 
 async def create_or_get_alias(telegram_user_id: int) -> str:
@@ -32,13 +33,13 @@ async def get_counselors() -> list[CounselorInfo]:
     return [CounselorInfo(**row) for row in r.json()]
 
 
-async def get_counselor(counselor_id: str) -> CounselorResponse:
+async def get_counselor(counselor_id: int) -> CounselorResponse:
     r = await auth_client.get(f"{settings.core_api_base}/counselors/{counselor_id}")
     r.raise_for_status()
     return CounselorResponse(**r.json())
 
 
-async def get_group_link(telegram_user_id: int, counselor_id: str) -> str | None:
+async def get_group_link(telegram_user_id: int, counselor_id: int) -> str | None:
     r = await auth_client.post(
         f"{settings.core_api_base}/groups/link",
         data=GroupLinkRequest(
@@ -69,18 +70,18 @@ async def resolve_group(group_id: int) -> ResolveGroupResponse:
 async def create_group(
     user_alias: str,
     user_group_link: str,
-    user_group_id: str,
-    counselor_id: str,
-    counselor_group_id: str,
+    user_group_id: int,
+    counselor_id: int,
+    counselor_group_id: int,
 ) -> None:
     r = await auth_client.post(
         f"{settings.core_api_base}/groups",
         data=CreateGroupRequest(
             user_alias=user_alias,
             user_group_link=user_group_link,
-            user_group_id=user_group_id,
+            user_group_id=sanitize_supergroup_id_to_negative(user_group_id),
             counselor_id=counselor_id,
-            counselor_group_id=counselor_group_id,
-        ),
+            counselor_group_id=sanitize_supergroup_id_to_negative(counselor_group_id),
+        ).model_dump_json(),
     )
     r.raise_for_status()

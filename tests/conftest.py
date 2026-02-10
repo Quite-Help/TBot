@@ -67,6 +67,7 @@ def mock_update():
     """Create a mock Telegram Update object."""
     update = MagicMock()
     update.effective_chat.id = 12345
+    update.effective_user.id = 11111
     update.message = MagicMock()
     update.message.chat.id = 12345
     update.message.text = "Test message"
@@ -77,6 +78,7 @@ def mock_update():
     update.callback_query.message.edit_text = AsyncMock()
     update.callback_query.answer = AsyncMock()
     update.callback_query.data = "test:data"
+    update.callback_query.from_user.id = 22222
     return update
 
 
