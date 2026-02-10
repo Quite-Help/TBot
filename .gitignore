@@ -209,3 +209,6 @@ __marimo__/
 # telegram api
 *.session
 *.session-journal
+
+# Run Tunnel
+run-tunnel.sh

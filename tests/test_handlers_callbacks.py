@@ -35,7 +35,7 @@ async def test_callbacks_select_with_group_link(mock_update):
         # Verify API calls
         mock_get_counselor.assert_called_once_with(mock_counselor.id)
         mock_get_group_link.assert_called_once_with(
-            mock_update.callback_query.message.chat.id, mock_counselor.id
+            mock_update.callback_query.from_user.id, mock_counselor.id
         )
 
         # Verify message was edited
@@ -111,7 +111,7 @@ async def test_callbacks_start_session(mock_update):
 
         await callbacks(mock_update, MagicMock())
 
-        mock_create_or_get_alias.assert_called_once_with(mock_update.effective_chat.id)
+        mock_create_or_get_alias.assert_called_once_with(mock_update.callback_query.from_user.id)
 
         mock_create_group.assert_called_once_with(
             mock_alias,
@@ -141,8 +141,8 @@ async def test_callbacks_home(mock_update):
 
     mock_alias = "test_alias_123"
     mock_counselors = [
-        CounselorInfo(id="1", name="John Doe"),
-        CounselorInfo(id="2", name="Jane Smith"),
+        CounselorInfo(id=1, name="John Doe"),
+        CounselorInfo(id=2, name="Jane Smith"),
     ]
 
     with (
@@ -159,7 +159,7 @@ async def test_callbacks_home(mock_update):
         await callbacks(mock_update, MagicMock())
 
         # Verify API calls
-        mock_alias_func.assert_called_once_with(mock_update.callback_query.message.chat.id)
+        mock_alias_func.assert_called_once_with(mock_update.callback_query.from_user.id)
         mock_counselors_func.assert_called_once()
 
         # Verify message was edited

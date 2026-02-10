@@ -157,7 +157,9 @@ async def test_get_group_link_success():
             telegram_user_id=hashed_user, counselor_id=c_id
         ).model_dump_json()
 
-        mock_post.assert_called_once_with(f"{settings.core_api_base}/groups/link", data=expected_payload)
+        mock_post.assert_called_once_with(
+            f"{settings.core_api_base}/groups/link", data=expected_payload
+        )
         assert result == mock_link
 
 
@@ -189,7 +191,9 @@ async def test_get_group_link_without_link():
             telegram_user_id=hashed_id, counselor_id=c_id
         ).model_dump_json()
 
-        mock_post.assert_called_once_with(f"{settings.core_api_base}/groups/link", data=expected_payload)
+        mock_post.assert_called_once_with(
+            f"{settings.core_api_base}/groups/link", data=expected_payload
+        )
         assert result is None
 
 

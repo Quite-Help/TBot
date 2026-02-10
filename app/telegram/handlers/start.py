@@ -26,8 +26,8 @@ Select a counselor to see their profile from the list below. When you're ready, 
 
 
 async def start(update: Update, _context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.effective_chat.id
-    alias = await create_or_get_alias(chat_id)
+    user_id = update.effective_user.id
+    alias = await create_or_get_alias(user_id)
     counselors = await get_counselors()
 
     keyboard = [[InlineKeyboardButton(c.name, callback_data=f"select:{c.id}")] for c in counselors]
